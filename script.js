@@ -9,11 +9,9 @@
  *  Controls: OrbitControls (drag to orbit, scroll to zoom)
  */
 
-import * as THREE from 'three';
-import { OrbitControls }   from 'three/addons/controls/OrbitControls.js';
-import { EffectComposer }  from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass }      from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+// The renderer and helpers are loaded globally via the script tags in index.html.
+// This file expects THREE, OrbitControls, EffectComposer, RenderPass and UnrealBloomPass
+// to be available on the window object.
 
 // ─────────────────────────────────────────────────────────────
 // Config
@@ -52,26 +50,37 @@ scene.fog = new THREE.FogExp2(0x020818, 0.00052);
 const camera = new THREE.PerspectiveCamera(
   60, window.innerWidth / window.innerHeight, 0.5, 2000
 );
-camera.position.set(0, 0, 480);
+camera.position.set(0, 160, 920);
+
+const cameraStartPos = camera.position.clone();
+const cameraEndPos = new THREE.Vector3(0, 0, 480);
+const cameraTargetStart = new THREE.Vector3(0, 24, 0);
+const cameraTargetEnd = new THREE.Vector3(0, 0, 0);
+let introActive = false;
+let introTime = 0;
+const introDur = 2.6;
 
 // ─────────────────────────────────────────────────────────────
 // OrbitControls — user can drag to orbit / scroll to zoom
 // ─────────────────────────────────────────────────────────────
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping  = true;
 controls.dampingFactor  = 0.06;
 controls.enablePan      = false;
 controls.minDistance    = 140;
 controls.maxDistance    = 950;
 controls.rotateSpeed    = 0.55;
+controls.target.copy(cameraTargetStart);
+controls.update();
+controls.enabled = false;
 
 // ─────────────────────────────────────────────────────────────
 // Post-processing — bloom gives particles the "glowing" look
 // ─────────────────────────────────────────────────────────────
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
+const composer = new THREE.EffectComposer(renderer);
+composer.addPass(new THREE.RenderPass(scene, camera));
 
-const bloom = new UnrealBloomPass(
+const bloom = new THREE.UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
   1.5,   // strength
   0.55,  // radius
@@ -229,7 +238,11 @@ for (let i = 0; i < CFG.heartN; i++) {
 const heartGroup = new THREE.Group();
 heartGroup.add(new THREE.Points(heartGeo, makeMat()));
 heartGroup.rotation.y = 0.45;   // start with a slight angle to reveal 3-D depth
+heartGroup.position.y = -18;
 scene.add(heartGroup);
+const modal = document.getElementById('modal');
+const hint = document.getElementById('hint');
+const chars = document.querySelectorAll('.char');
 
 // ═════════════════════════════════════════════════════════════
 // 2. EMITTED / FLYING PARTICLES
@@ -383,6 +396,22 @@ function render() {
   heartGroup.rotation.y += dt * CFG.rotSpeed;
   heartGroup.rotation.x  = Math.sin(tm * 0.20) * 0.12;   // gentle nod
   heartGroup.scale.setScalar(beat);
+
+  if (introActive && introTime < introDur) {
+    introTime += dt;
+    const t = Math.min(1, introTime / introDur);
+    const ease = t * t * (3 - 2 * t);
+
+    camera.position.lerpVectors(cameraStartPos, cameraEndPos, ease);
+    controls.target.lerpVectors(cameraTargetStart, cameraTargetEnd, ease);
+    camera.lookAt(controls.target);
+    heartGroup.position.y = -18 + 18 * ease;
+
+    if (t >= 1) {
+      controls.enabled = true;
+    }
+  }
+
   heartGroup.updateMatrixWorld();   // must come BEFORE emitted-particle spawning
 
   // ── Flash bloom on each beat ───────────────────────────────
@@ -402,16 +431,21 @@ function render() {
 // MODAL → start animation
 // ═════════════════════════════════════════════════════════════
 document.getElementById('ok-btn').addEventListener('click', () => {
-  document.getElementById('modal').classList.add('hidden');
+  if (introActive) return;
+  introActive = true;
+
+  document.body.classList.add('scene-visible');
+  modal.classList.add('hidden');
 
   // Staggered letter-by-letter text reveal
-  document.querySelectorAll('.char').forEach((ch, i) => {
+  chars.forEach((ch, i) => {
     setTimeout(() => ch.classList.add('visible'), 900 + i * 130);
   });
 
   // Show orbit hint after text finishes
   setTimeout(() => {
-    document.getElementById('hint').classList.add('visible');
+    hint.classList.add('visible');
+    controls.enabled = true;
   }, 2400);
 
   render();

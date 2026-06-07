@@ -16,6 +16,12 @@ html, body {
   top: 0;
   left: 0;
   z-index: 0;
+  opacity: 0;
+  transition: opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body.scene-visible #c {
+  opacity: 1;
 }
 
 /* ── Love message ────────────────────────────────────────────── */
@@ -83,7 +89,8 @@ html, body {
   z-index: 10;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 1.2s ease;
+  transform: translateY(10px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
 }
 
 .hint.visible { opacity: 1; }
