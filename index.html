@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heart Animation 3D ❤️</title>
+  <meta name="description" content="A stunning 3D heart particle animation with a loving message.">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Modal -->
+  <div id="modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-heart-icon">❤️</div>
+      <h1>A Little Surprise</h1>
+      <p class="modal-sub">Something beautiful is waiting for you&hellip;</p>
+      <button id="ok-btn">
+        <span class="btn-text">Open My Heart</span>
+        <span class="btn-icon">✨</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Three.js canvas -->
+  <canvas id="c"></canvas>
+
+  <!-- Love message overlay -->
+  <div class="txt" id="love-text">
+    <span class="char">I</span>
+    <span class="char emoji">❤️</span>
+    <span class="char">Y</span>
+    <span class="char">o</span>
+    <span class="char">u</span>
+  </div>
+
+  <!-- Orbit hint -->
+  <div class="hint" id="hint">🖱 Drag to orbit &nbsp;·&nbsp; Scroll to zoom</div>
+
+  <!--
+    Scripts loaded in strict dependency order at end of body.
+    All files expose themselves on the global THREE object.
+  -->
+
+  <!-- 1. Three.js core -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- 2. OrbitControls -->
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- 3. Shaders required by UnrealBloomPass -->
+  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+
+  <!-- 4. Post-processing passes (EffectComposer first, then passes that depend on it) -->
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+  <!-- 5. Our animation script (uses THREE global, so must come last) -->
+  <script src="script.js"></script>
+
+</body>
+</html>

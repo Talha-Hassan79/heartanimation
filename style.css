@@ -1,0 +1,247 @@
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #020818;
+  font-family: 'Outfit', Arial, sans-serif;
+}
+
+/* Three.js canvas — positioned by JS, just pin top-left */
+#c {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* ── Love message ────────────────────────────────────────────── */
+.txt {
+  position: fixed;
+  bottom: 44px;
+  width: 100%;
+  text-align: center;
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: white;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(28px) scale(0.75);
+  transition:
+    opacity  0.55s ease,
+    transform 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-shadow:
+    0 0 12px rgba(255, 60, 120, 0.9),
+    0 0 32px rgba(255, 0,  80,  0.55),
+    0 0 64px rgba(255, 0,  80,  0.25);
+}
+
+.char.emoji {
+  font-size: 1.1em;
+  filter: drop-shadow(0 0 10px rgba(255, 60, 120, 0.9));
+}
+
+.char.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: text-shimmer 2.6s ease-in-out infinite;
+}
+
+@keyframes text-shimmer {
+  0%, 100% {
+    text-shadow:
+      0 0 12px rgba(255, 60, 120, 0.9),
+      0 0 32px rgba(255,  0,  80, 0.55),
+      0 0 64px rgba(255,  0,  80, 0.25);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(255, 110, 160, 1.0),
+      0 0 50px rgba(255,  60, 120, 0.85),
+      0 0 90px rgba(255,   0,  80, 0.45);
+  }
+}
+
+/* ── Orbit hint ──────────────────────────────────────────────── */
+.hint {
+  position: fixed;
+  bottom: 16px;
+  right: 22px;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.22);
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.hint.visible { opacity: 1; }
+
+/* ── Modal overlay ───────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 24, 0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ── Modal card ──────────────────────────────────────────────── */
+.modal-card {
+  background: linear-gradient(145deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255, 51, 102, 0.05) 100%);
+  border: 1px solid rgba(255, 51, 102, 0.25);
+  padding: 52px 46px 46px;
+  border-radius: 28px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 8px 48px rgba(0,0,0,0.55),
+    0 0 70px rgba(255, 51, 102, 0.10),
+    inset 0 0 28px rgba(255,255,255,0.02);
+  text-align: center;
+  max-width: 430px;
+  width: 90%;
+  animation: modal-enter 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer sweep across card */
+.modal-card::before {
+  content: '';
+  position: absolute;
+  top: -60%; left: -60%;
+  width: 50%; height: 220%;
+  background: linear-gradient(105deg,
+    transparent, rgba(255,255,255,0.04), transparent);
+  transform: rotate(30deg);
+  animation: card-shine 3.5s ease-in-out infinite;
+}
+
+@keyframes card-shine {
+  0%   { left: -60%; }
+  60%  { left: 120%; }
+  100% { left: 120%; }
+}
+
+@keyframes modal-enter {
+  from { transform: scale(0.75) translateY(22px); opacity: 0; }
+  to   { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+/* ── Heart icon (modal) ──────────────────────────────────────── */
+.modal-heart-icon {
+  font-size: 58px;
+  line-height: 1;
+  margin-bottom: 22px;
+  display: block;
+  animation: heart-bounce 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 14px rgba(255, 50, 100, 0.9));
+}
+
+@keyframes heart-bounce {
+  0%, 100% { transform: scale(1);    }
+  30%       { transform: scale(1.20); }
+  50%       { transform: scale(1.09); }
+  65%       { transform: scale(1.16); }
+}
+
+.modal-card h1 {
+  margin: 0 0 10px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 14px rgba(255, 51, 102, 0.6);
+  letter-spacing: 0.02em;
+}
+
+.modal-sub {
+  margin: 0 0 34px;
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.52);
+  letter-spacing: 0.02em;
+}
+
+/* ── Button ──────────────────────────────────────────────────── */
+#ok-btn {
+  background: linear-gradient(135deg, #ff3366 0%, #ff007f 50%, #c4006e 100%);
+  color: #fff;
+  border: none;
+  padding: 14px 40px;
+  font: 700 17px 'Outfit', Arial, sans-serif;
+  border-radius: 50px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.10),
+    0 4px 22px rgba(255, 51, 102, 0.50),
+    0 0 44px rgba(255, 51, 102, 0.22);
+  transition:
+    transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.25s ease;
+  outline: none;
+}
+
+/* Highlight layer */
+#ok-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.16), transparent);
+  border-radius: inherit;
+}
+
+.btn-text { position: relative; z-index: 1; }
+.btn-icon  { position: relative; z-index: 1; margin-left: 8px; font-size: 18px; }
+
+#ok-btn:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.16),
+    0 8px 32px rgba(255, 51, 102, 0.72),
+    0 0 64px rgba(255, 51, 102, 0.42);
+}
+
+#ok-btn:active { transform: translateY(1px) scale(0.98); }
+
+/* Pulsing ring around button */
+#ok-btn::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 54px;
+  border: 2px solid rgba(255, 51, 102, 0.5);
+  animation: btn-ring 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes btn-ring {
+  0%   { transform: scale(1);    opacity: 0.75; }
+  100% { transform: scale(1.28); opacity: 0;    }
+}
